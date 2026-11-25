@@ -1,0 +1,469 @@
+{
+  "project": "BharatPCB-AI",
+  "system_version": "1.0.0",
+  "inspection_time_utc": "2026-11-25T14:52:40.499251+00:00",
+  "reference_image": "golden_board_v1.png",
+  "test_image": "batch_01_unit_04.png",
+  "inspection_result": {
+    "verdict": "REVIEW",
+    "verdict_reason": "REVIEW: Manual inspection advised: 1 low-confidence detection(s) requiring verification.",
+    "can_proceed_to_comparison": true,
+    "timestamp": "2026-11-25T14:52:40.499251+00:00",
+    "alignment": {
+      "success": true,
+      "can_proceed_to_comparison": true,
+      "has_aligned_image": true,
+      "has_homography": true,
+      "metrics": {
+        "detected_features_ref": 2993,
+        "detected_features_test": 2993,
+        "good_matches_count": 2944,
+        "inliers_count": 2944,
+        "inlier_ratio": 1.0,
+        "reprojection_error": 0.0,
+        "is_homography_valid": true,
+        "quality_score": 1.0,
+        "status": "SUCCESS",
+        "rejection_reason": null
+      }
+    },
+    "comparison": {
+      "ref_count": 5,
+      "test_count": 5,
+      "matched_count": 5,
+      "missing_count": 0,
+      "extra_count": 0,
+      "misplaced_count": 0,
+      "class_mismatch_count": 0,
+      "low_confidence_count": 1,
+      "total_discrepancies": 0,
+      "matched": [
+        {
+          "class_name": "ic",
+          "reference": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.9108,
+            "box": [
+              176.55789184570312,
+              177.14715576171875,
+              305.0753479003906,
+              304.4943542480469
+            ],
+            "centroid": [
+              240.82,
+              240.82
+            ],
+            "width": 128.52,
+            "height": 127.35,
+            "area": 16366.34
+          },
+          "test": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.9108,
+            "box": [
+              176.55789184570312,
+              177.14715576171875,
+              305.0753479003906,
+              304.4943542480469
+            ],
+            "centroid": [
+              240.82,
+              240.82
+            ],
+            "width": 128.52,
+            "height": 127.35,
+            "area": 16366.34
+          },
+          "iou": 1.0,
+          "centroid_distance": 0.0,
+          "is_misplaced": false,
+          "notes": "Verified match (IoU: 1.00, shift: 0.0px)"
+        },
+        {
+          "class_name": "ic",
+          "reference": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.8943,
+            "box": [
+              316.6868591308594,
+              498.00421142578125,
+              485.2320251464844,
+              639.8947143554688
+            ],
+            "centroid": [
+              400.96,
+              568.95
+            ],
+            "width": 168.55,
+            "height": 141.89,
+            "area": 23914.96
+          },
+          "test": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.8943,
+            "box": [
+              316.6868591308594,
+              498.00421142578125,
+              485.2320251464844,
+              639.8947143554688
+            ],
+            "centroid": [
+              400.96,
+              568.95
+            ],
+            "width": 168.55,
+            "height": 141.89,
+            "area": 23914.96
+          },
+          "iou": 1.0,
+          "centroid_distance": 0.0,
+          "is_misplaced": false,
+          "notes": "Verified match (IoU: 1.00, shift: 0.0px)"
+        },
+        {
+          "class_name": "ic",
+          "reference": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.8827,
+            "box": [
+              516.1112670898438,
+              217.70237731933594,
+              639.6447143554688,
+              321.540283203125
+            ],
+            "centroid": [
+              577.88,
+              269.62
+            ],
+            "width": 123.53,
+            "height": 103.84,
+            "area": 12827.45
+          },
+          "test": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.8827,
+            "box": [
+              516.1112670898438,
+              217.70237731933594,
+              639.6447143554688,
+              321.540283203125
+            ],
+            "centroid": [
+              577.88,
+              269.62
+            ],
+            "width": 123.53,
+            "height": 103.84,
+            "area": 12827.45
+          },
+          "iou": 1.0,
+          "centroid_distance": 0.0,
+          "is_misplaced": false,
+          "notes": "Verified match (IoU: 1.00, shift: 0.0px)"
+        },
+        {
+          "class_name": "resistor",
+          "reference": {
+            "class_id": 6,
+            "class_name": "resistor",
+            "confidence": 0.433,
+            "box": [
+              554.3043212890625,
+              452.17041015625,
+              566.4449462890625,
+              464.13909912109375
+            ],
+            "centroid": [
+              560.37,
+              458.15
+            ],
+            "width": 12.14,
+            "height": 11.97,
+            "area": 145.31
+          },
+          "test": {
+            "class_id": 6,
+            "class_name": "resistor",
+            "confidence": 0.433,
+            "box": [
+              554.3043212890625,
+              452.17041015625,
+              566.4449462890625,
+              464.13909912109375
+            ],
+            "centroid": [
+              560.37,
+              458.15
+            ],
+            "width": 12.14,
+            "height": 11.97,
+            "area": 145.31
+          },
+          "iou": 1.0,
+          "centroid_distance": 0.0,
+          "is_misplaced": false,
+          "notes": "Verified match (IoU: 1.00, shift: 0.0px)"
+        },
+        {
+          "class_name": "resistor",
+          "reference": {
+            "class_id": 6,
+            "class_name": "resistor",
+            "confidence": 0.354,
+            "box": [
+              112.95115661621094,
+              283.6340026855469,
+              126.66390991210938,
+              302.5130310058594
+            ],
+            "centroid": [
+              119.81,
+              293.07
+            ],
+            "width": 13.71,
+            "height": 18.88,
+            "area": 258.88
+          },
+          "test": {
+            "class_id": 6,
+            "class_name": "resistor",
+            "confidence": 0.354,
+            "box": [
+              112.95115661621094,
+              283.6340026855469,
+              126.66390991210938,
+              302.5130310058594
+            ],
+            "centroid": [
+              119.81,
+              293.07
+            ],
+            "width": 13.71,
+            "height": 18.88,
+            "area": 258.88
+          },
+          "iou": 1.0,
+          "centroid_distance": 0.0,
+          "is_misplaced": false,
+          "notes": "Verified match (IoU: 1.00, shift: 0.0px)"
+        }
+      ],
+      "missing": [],
+      "extra": [],
+      "misplaced": [],
+      "class_mismatches": [],
+      "low_confidence_warnings": [
+        {
+          "class_id": 6,
+          "class_name": "resistor",
+          "confidence": 0.354,
+          "box": [
+            112.95115661621094,
+            283.6340026855469,
+            126.66390991210938,
+            302.5130310058594
+          ],
+          "centroid": [
+            119.81,
+            293.07
+          ],
+          "width": 13.71,
+          "height": 18.88,
+          "area": 258.88
+        }
+      ]
+    },
+    "ref_detections_count": 5,
+    "test_detections_count": 5,
+    "ref_detections": [
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.9108,
+        "box": [
+          176.55789184570312,
+          177.14715576171875,
+          305.0753479003906,
+          304.4943542480469
+        ],
+        "centroid": [
+          240.82,
+          240.82
+        ],
+        "width": 128.52,
+        "height": 127.35,
+        "area": 16366.34
+      },
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.8943,
+        "box": [
+          316.6868591308594,
+          498.00421142578125,
+          485.2320251464844,
+          639.8947143554688
+        ],
+        "centroid": [
+          400.96,
+          568.95
+        ],
+        "width": 168.55,
+        "height": 141.89,
+        "area": 23914.96
+      },
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.8827,
+        "box": [
+          516.1112670898438,
+          217.70237731933594,
+          639.6447143554688,
+          321.540283203125
+        ],
+        "centroid": [
+          577.88,
+          269.62
+        ],
+        "width": 123.53,
+        "height": 103.84,
+        "area": 12827.45
+      },
+      {
+        "class_id": 6,
+        "class_name": "resistor",
+        "confidence": 0.433,
+        "box": [
+          554.3043212890625,
+          452.17041015625,
+          566.4449462890625,
+          464.13909912109375
+        ],
+        "centroid": [
+          560.37,
+          458.15
+        ],
+        "width": 12.14,
+        "height": 11.97,
+        "area": 145.31
+      },
+      {
+        "class_id": 6,
+        "class_name": "resistor",
+        "confidence": 0.354,
+        "box": [
+          112.95115661621094,
+          283.6340026855469,
+          126.66390991210938,
+          302.5130310058594
+        ],
+        "centroid": [
+          119.81,
+          293.07
+        ],
+        "width": 13.71,
+        "height": 18.88,
+        "area": 258.88
+      }
+    ],
+    "test_detections": [
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.9108,
+        "box": [
+          176.55789184570312,
+          177.14715576171875,
+          305.0753479003906,
+          304.4943542480469
+        ],
+        "centroid": [
+          240.82,
+          240.82
+        ],
+        "width": 128.52,
+        "height": 127.35,
+        "area": 16366.34
+      },
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.8943,
+        "box": [
+          316.6868591308594,
+          498.00421142578125,
+          485.2320251464844,
+          639.8947143554688
+        ],
+        "centroid": [
+          400.96,
+          568.95
+        ],
+        "width": 168.55,
+        "height": 141.89,
+        "area": 23914.96
+      },
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.8827,
+        "box": [
+          516.1112670898438,
+          217.70237731933594,
+          639.6447143554688,
+          321.540283203125
+        ],
+        "centroid": [
+          577.88,
+          269.62
+        ],
+        "width": 123.53,
+        "height": 103.84,
+        "area": 12827.45
+      },
+      {
+        "class_id": 6,
+        "class_name": "resistor",
+        "confidence": 0.433,
+        "box": [
+          554.3043212890625,
+          452.17041015625,
+          566.4449462890625,
+          464.13909912109375
+        ],
+        "centroid": [
+          560.37,
+          458.15
+        ],
+        "width": 12.14,
+        "height": 11.97,
+        "area": 145.31
+      },
+      {
+        "class_id": 6,
+        "class_name": "resistor",
+        "confidence": 0.354,
+        "box": [
+          112.95115661621094,
+          283.6340026855469,
+          126.66390991210938,
+          302.5130310058594
+        ],
+        "centroid": [
+          119.81,
+          293.07
+        ],
+        "width": 13.71,
+        "height": 18.88,
+        "area": 258.88
+      }
+    ]
+  }
+}

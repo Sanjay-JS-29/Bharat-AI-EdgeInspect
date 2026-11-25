@@ -4,213 +4,297 @@
 *Submitted under the Manufacturing & Industry 4.0 Theme for the Arm Bharat AI-SoC Challenge 2026–27 (Problem Statement 5)*
 
 [![Platform: Raspberry Pi 5](https://img.shields.io/badge/Platform-Raspberry%20Pi%205%20(8GB)-red.svg)](https://www.raspberrypi.com/products/raspberry-pi-5/)
-[![Framework: PyTorch / YOLO11s](https://img.shields.io/badge/Vision-YOLO11s-blue.svg)](https://docs.ultralytics.com/)
-[![Runtime: ExecuTorch 1.5](https://img.shields.io/badge/Edge%20Runtime-ExecuTorch%201.5-orange.svg)](https://pytorch.org/executorch/)
+[![Vision: YOLO11s](https://img.shields.io/badge/Vision-YOLO11s-blue.svg)](https://docs.ultralytics.com/)
+[![Alignment: OpenCV RANSAC](https://img.shields.io/badge/Alignment-OpenCV%20ORB%20%2F%20RANSAC-green.svg)](https://opencv.org/)
+[![Edge Runtime: ExecuTorch 1.5](https://img.shields.io/badge/Edge%20Runtime-ExecuTorch%201.5-orange.svg)](https://pytorch.org/executorch/)
 [![LLM: Llama 3.2 1B INT4](https://img.shields.io/badge/LLM-Llama%203.2%201B%20(SpinQuant%20INT4)-purple.svg)](https://huggingface.co/meta-llama)
 [![Language: Python 3](https://img.shields.io/badge/Python-3.10%2B-yellow.svg)](https://www.python.org/)
 
 ---
 
-## 📌 Executive Summary
+## 📌 Project Overview: PCB Missing & Misplaced Component Inspection
 
-**EdgeInspect** is an edge-native AI inspection system engineered for real-time visual quality assurance of Printed Circuit Board (PCB) assemblies on factory floors. Developed for the **Arm Bharat AI-SoC Challenge 2026–27 (PS5)**, the system detects critical surface assembly faults without relying on cloud connectivity, preserving low latency, factory-floor data privacy, and full offline autonomy.
+**EdgeInspect AI** is an edge-native automated optical inspection (AOI) system designed for real-time visual quality assurance of Printed Circuit Board (PCB) assemblies on electronics manufacturing lines. Developed for the **Arm Bharat AI-SoC Challenge 2026–27 (PS5)**, the system detects critical surface-mount assembly defects on-device without cloud connectivity, ensuring low inspection latency, complete data privacy, and full operational autonomy.
 
-The system focuses on two critical PCB assembly defects:
-1. **Missing Components**: Verifies expected components against a known-good reference board and flags components that are absent.
-2. **Misplaced Components**: Identifies components that are present but mounted at incorrect coordinates or orientations relative to the reference footprint.
-
-Inspection findings are processed by an on-device language assistant that provides human operators with plain-language diagnostics and actionable quality-control recommendations.
+While generic object detection identifies component classes, the primary core objective of **EdgeInspect AI** is **reference-guided anomaly detection**:
+1. **Missing Component Detection**: Verifies expected components against a golden reference standard and pinpoints components absent from designated footprints.
+2. **Misplaced Component Detection**: Identifies components that are present on the board but mounted with spatial drift or angular displacement exceeding IPC manufacturing tolerances.
+3. **Class Mismatch & Extra Part Detection**: Flags incorrect components placed on designated pads or uncataloged foreign objects on the PCB.
+4. **On-Device LLM Defect Advisory**: Translates quantitative spatial deltas into plain-language root-cause diagnostics and rework guidance for assembly line operators using a local quantized language model.
 
 ---
 
 ## 🎯 Problem Statement & Objectives
 
 * **Problem Statement**: Arm Bharat AI-SoC Challenge 2026–27 — **PS5: Real-time Industrial Defect Detection & Quality-Control Assistant**.
-* **Target Objective**: Build an on-device AI system that performs real-time visual inspection of manufactured components, detects surface anomalies, classifies defect severity, and assists factory-floor QC operators with actionable guidance without cloud dependence.
+* **Target Objective**: Build an on-device AI system that performs real-time visual inspection of manufactured assemblies, isolates missing and misplaced components, classifies defect severity, and assists factory-floor QC technicians with actionable remediation advice.
 
-### Key Objectives
-* **Reference-Based PCB Inspection**: Compare a known-good golden reference PCB image against an inspected PCB to accurately localize missing and misplaced parts.
-* **On-Edge Vision Localisation**: Deploy a lightweight `YOLO11s` detector checkpoint (`models/best.pt`) on an edge SoC to extract bounding box coordinates across 9 PCB component classes.
-* **Structural Anomaly Verification**: Utilize OpenCV image processing and structural dissimilarity ($1 - \text{SSIM}$) to isolate assembly deltas.
-* **On-Device LLM Operator Advisory**: Run a quantized language model (`Llama 3.2 1B Instruct` in SpinQuant INT4 format) locally via **ExecuTorch 1.5** on ARM64 CPU to produce concise operator alerts and remediation steps.
-* **Lightweight Local Service**: Host an edge Flask service providing endpoints for reference registration, test inspection, and system status telemetry.
+### Core Engineering Objectives
+* **Sub-Pixel Geometric Alignment**: Align test PCB images against a known-good golden reference PCB under perspective variation and lighting changes using ORB feature matching and RANSAC homography estimation.
+* **Strict Safety Gating**: Implement fail-safe quality gates that halt automated comparison when image alignment is sub-optimal, preventing false pass/fail verdicts.
+* **Spatial Discrepancy Matching**: Match reference and test bounding boxes using dual IoU and Euclidean centroid-drift metrics to distinguish normal manufacturing jitter from genuine misplacement defects.
+* **Illumination-Normalized Structural Dissimilarity**: Compute $(1 - \text{SSIM})$ differential heatmaps to visualize physical surface defects.
+* **On-Edge LLM Operator Advisory**: Execute **Llama 3.2 1B Instruct (SpinQuant INT4)** locally on ARM64 CPU via **ExecuTorch 1.5** (with deterministic IPC quality engineering rules as fallback).
+* **Industrial Touch-Ready Interface**: Host an interactive Streamlit edge dashboard with camera ingestion, defect visualization overlays, technician Q&A, and downloadable audit certificates (PDF, CSV, JSON).
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture & Workflow
 
-EdgeInspect operates strictly on the edge device (Raspberry Pi 5). The inspection workflow executes entirely on-chip:
+EdgeInspect executes its complete inspection pipeline on-chip:
 
 ```mermaid
-flowchart LR
-    A["Image Input\n(Reference & Test PCB)"] --> B["YOLO11s Vision Stage\n(models/best.pt)"]
-    A --> C["Inspection Engine\n(pcb_engine / OpenCV)"]
-    B --> C
-    C --> D{"Defect Analysis\n(Missing & Misplaced)"}
-    D --> E["Visual Artifacts\n(result.jpg, panel.jpg, board.jpg)"]
-    D --> F["On-Device LLM Advisory\n(advisor.py / Llama 3.2 1B INT4)"]
-    F --> G["Operator Dashboard / Flask UI\n(app.py)"]
-    E --> G
+flowchart TD
+    A["Image Acquisition\n(Webcam / Test PCB / Golden Reference)"] --> B["Geometric Alignment Engine\n(OpenCV ORB + RANSAC Homography)"]
+    B --> C{"Alignment Quality Gate\n(Inlier Ratio & Reprojection Error)"}
+    C -- Rejected --> D["Safety Halt / Review Status\n(Aborts Comparison to Prevent False Claims)"]
+    C -- Passed --> E["YOLO11s Vision Stage\n(models/best.pt)"]
+    E --> F["Component Comparator Engine\n(Missing, Misplaced & Mismatch Checks)"]
+    F --> G["Structural Dissimilarity Map\n(1 - SSIM Differential Heatmap)"]
+    F --> H["AI Quality Control Advisor\n(Llama 3.2 1B INT4 / IPC Rules)"]
+    G --> I["Industrial Operator Dashboard\n(Streamlit UI / app.py)"]
+    H --> I
+    I --> J["Multi-Format Inspection Reports\n(PDF Certificate, CSV Logs, JSON Records)"]
 ```
 
-### Architectural Layers & Module Responsibilities
+### Module Responsibilities
 
-| Layer / Module | Component / File | Primary Responsibility |
+| Directory / File | Component | Primary Responsibility |
 | :--- | :--- | :--- |
-| **Image Acquisition** | `data/reference.jpg` + Test Frame | Captures or loads the golden reference PCB and inspected board images via local camera/file ingestion. |
-| **Supporting Vision Detector** | `models/best.pt` | `YOLO11s` model checkpoint loaded once into memory at startup; extracts component bounding boxes across 9 classes. |
-| **Defect Comparison Engine** | `pcb_engine` | Performs alignment, reference-to-test bounding-box matching, footprint occupancy checks, and $(1 - \text{SSIM})$ difference mapping. |
-| **Operator Advisory** | `advisor.py` | Ingests structured defect parameters (component class, bounding box, spatial delta) and invokes **Llama 3.2 1B INT4** to produce operator recommendations; includes rule-based fallback. |
-| **Edge Application Service** | `app.py` | Exposes local Flask endpoints (`/set_ref`, `/inspect`, `/status`) and renders operator interfaces. |
-| **Local Persistence** | `results/` | Stores annotated defect overlays, composite panels, and inspection logs on local storage for quality traceability. |
+| `src/aligner.py` | Geometric Alignment Engine | Extracts ORB features, matches descriptors, computes RANSAC homography, and validates inlier ratios. |
+| `src/detector.py` | Object Detection Stage | Loads `models/best.pt` in read-only mode to extract component classes and bounding boxes. |
+| `src/comparator.py` | Defect Comparator Engine | Matches reference and test components; flags missing, misplaced, mismatch, and extra components. |
+| `src/inspector.py` | Inspection Orchestrator | Coordinates alignment, vision inference, discrepancy detection, and overall safety verdicts. |
+| `src/advisor.py` | AI Operator Advisor | Formulates root-cause analysis and rework instructions via local ExecuTorch Llama 3.2 or IPC rule engine. |
+| `src/visualizer.py` | Defect Visualizer | Renders side-by-side comparison panels, bounding box overlays, and cropped defect callouts. |
+| `src/reporter.py` | Multi-Format Reporter | Generates timestamped PDF inspection certificates, CSV defect logs, and JSON audit files. |
+| `src/camera.py` | Ingestion & Capture Helper | Handles image byte decoding, sanity checks, and camera frame normalization. |
+| `src/config.py` | Central Configuration | Manages paths, component classes, color palettes, and defect tolerance thresholds. |
+| `app.py` | Operator Dashboard | Streamlit-based dark industrial operator cockpit with live inspection controls. |
 
 ---
 
-## ⚙️ Hardware Platform & Deployment Environment
+## 🔍 Defect Detection Methodology
 
-| Specification | Target Configuration |
+### 1. Missing Component Detection
+- **Reference Footprint Registration**: Every component detected on the golden reference PCB defines an expected footprint $(x_1, y_1, x_2, y_2)$ and class label $C_{\text{ref}}$.
+- **Occupancy Verification**: Following alignment, the test PCB's component detections are evaluated within the reference bounding box.
+- **Defect Criterion**: If no test detection of class $C_{\text{ref}}$ achieves an $\text{IoU} \ge 0.30$ with the reference footprint, the component is classified as **MISSING (CRITICAL)**.
+
+### 2. Misplaced Component Detection
+- **Centroid Drift Analysis**: For components successfully matched by class and overlapping footprint, Euclidean centroid distance $d$ is calculated:
+  $$d = \sqrt{(c_{x,\text{ref}} - c_{x,\text{test}})^2 + (c_{y,\text{ref}} - c_{y,\text{test}})^2}$$
+- **Manufacturing Jitter Guard**: Small spatial deviations ($d \le 20.0\text{ px}$) are accepted as normal pick-and-place placement tolerance.
+- **Defect Criterion**: When centroid displacement exceeds the allowable limit ($d > 20.0\text{ px}$), the component is classified as **MISPLACED (HIGH)** with exact pixel shift vector and rework coordinates.
+
+### 3. Component Class Mismatch & Extra Parts
+- **Class Mismatch**: Detected when a component occupies a designated reference pad but exhibits a different component classification (e.g., resistor placed on capacitor footprint).
+- **Extra Component**: Detected when an uncataloged component is identified on the test board without a corresponding reference pad.
+
+### 4. Safety-Gated Alignment Verification
+- Automatic alignment requires a minimum of 100 good matches and an inlier ratio $\ge 0.15$.
+- If alignment fails (e.g., due to extreme glare, severe occlusion, or incorrect board orientation), inspection is immediately **HALTED** with status `REVIEW`, preventing false defect diagnoses.
+
+---
+
+## 🤖 Llama-Based Defect Recommendation Engine
+
+EdgeInspect integrates an on-device AI advisor (`src/advisor.py`) that operates locally on the edge device:
+
+1. **ExecuTorch Llama 3.2 1B Instruct (SpinQuant INT4)**:
+   - When ExecuTorch and model weights are present, the advisor synthesizes contextual root-cause engineering analyses and rework steps on-device.
+   - Evaluated on Raspberry Pi 5 ARM64 CPU: **2.59 s load time**, **99.14 tokens/s prefill**, and **13.72 tokens/s generation throughput**.
+2. **Deterministic IPC Quality Engineering Fallback**:
+   - When LLM model weights are not loaded, the advisor falls back seamlessly to a deterministic electronics quality engineering rules engine.
+   - Generates structured root causes, IPC-A-610 rework procedures, solder paste inspection recommendations, and pick-and-place feeder diagnostic guidance.
+
+---
+
+## ⚙️ Hardware Platform & Raspberry Pi 5 Deployment
+
+| Parameter | Specification |
 | :--- | :--- |
-| **SoC / Compute** | **Raspberry Pi 5 (8 GB RAM)** |
-| **Processor** | Broadcom BCM2712, Quad-core ARM Cortex-A76 @ 2.4 GHz |
-| **Operating System** | ARM64 Debian GNU/Linux 13 (Trixie) |
-| **Available Resources at Setup** | 4 CPU Cores, ~7.6 GB free RAM, ~14 GB free storage |
-| **Image Source** | USB webcam / Smartphone camera integration (tested via ADB/SCP with Redmi 10) |
-| **Deployment Root** | `/home/edgeuser/edgeinspect/` |
-| **Model Path** | `/home/edgeuser/edgeinspect/models/best.pt` |
+| **Edge Compute** | **Raspberry Pi 5 (8 GB RAM)** |
+| **Processor** | Broadcom BCM2712 Quad-core ARM Cortex-A76 @ 2.4 GHz |
+| **Operating System** | ARM64 Debian GNU/Linux 13 (Trixie) / Raspberry Pi OS 64-bit |
+| **Deployment Root** | `/home/edgeuser/edgeinspect` |
+| **Hardware Config** | `deployment/raspberry_pi5/config.txt` |
+| **Boot Parameters** | `deployment/raspberry_pi5/cmdline.txt` |
+| **System Service** | `deployment/raspberry_pi5/edgeinspect.service` |
+
+### Deployment Setup Files
+All deployment configurations from the edge SD card are organized in `deployment/raspberry_pi5/`:
+- `config.txt`: Hardware camera auto-detect, display overlays, 64-bit ARM boost, and VC4 V3D driver settings.
+- `cmdline.txt`: Kernel boot parameters and PARTUUID root filesystem configuration.
+- `network-config.example`: Sanitized cloud-init Wi-Fi and Ethernet configuration template.
+- `user-data.example`: Sanitized cloud-init user setup and SSH enablement template.
+- `edgeinspect.service`: Systemd unit file for auto-starting the inspection cockpit on boot.
 
 ---
 
-## ⚡ Edge Optimization Techniques
+## 🚀 Installation & Quickstart
 
-To achieve responsive performance within the constrained compute and thermal budget of a Raspberry Pi 5 CPU, the following optimization strategies were implemented:
+### 1. Prerequisites
+- Python 3.10+ (tested on Python 3.11 & 3.12)
+- Git
 
-1. **SpinQuant INT4 LLM Quantization**:
-   - Quantized `Llama 3.2 1B Instruct` weights into SpinQuant INT4 format.
-   - Slashes memory footprint, fitting comfortably within available edge RAM and reducing CPU memory bandwidth bottlenecks.
-2. **ExecuTorch 1.5 ARM64 CPU Runtime**:
-   - Executed through PyTorch's specialized on-device runtime (**ExecuTorch 1.5**), compiling operations for native ARM64 NEON/SIMD execution.
-3. **Single Warm Initialization ("Load Model Once")**:
-   - The vision detector (`models/best.pt`) is loaded into memory during Flask server boot.
-   - Eliminates redundant multi-second disk I/O and graph compilation delays on individual inspection requests.
-4. **Decoupled Modular Pipeline**:
-   - Strict separation of concerns between `app.py` (serving), `pcb_engine` (computer vision), and `advisor.py` (language synthesis) enables independent testing, debugging, and graceful fallback.
-5. **Zero-Cloud Local Persistence**:
-   - Eliminates round-trip network latency and prevents factory IP/inspection images from leaving local storage.
-
----
-
-## 📊 Experimental Results & Validation
-
-### 1. Language Assistant Runtime on Raspberry Pi 5 CPU
-
-*Evaluated with **Llama 3.2 1B Instruct (SpinQuant INT4)** running on Raspberry Pi 5 CPU via **ExecuTorch 1.5**:*
-
-| Runtime Metric | Recorded Value |
-| :--- | :--- |
-| **Model Load Time** | **2.59 s** |
-| **Prompt Prefill Throughput** | **99.14 tokens/s** |
-| **Token Generation Throughput** | **13.72 tokens/s** |
-| **Demonstrated Output Length** | **79 tokens** |
-
-> *Note: These figures measure isolated edge LLM recommendation generation speed on the ARM64 CPU and do not include camera capture or vision inference latency.*
-
-### 2. Defect Detection & Visual Validation
-
-* The system was validated against physical PCB defect scenarios:
-  * **Misplaced Component Scenario**: A capacitor shifted from reference coordinates `(x, y, w, h) = (359, 170, 66, 71)` to `(264, 238, 66, 71)` (movement: 117 px; confidence: 0.74).
-  * **Engine Output**: Correctly identified the empty reference footprint and detected the component at the new position.
-  * **Artifacts Generated**:
-    * `result.jpg`: Annotated bounding boxes marking original and displaced locations.
-    * `panel.jpg`: Comparative multi-panel visualizer showing reference board, test board, and differential heatmap.
-    * `board.jpg`: High-resolution defect highlighting.
-    * $(1 - \text{SSIM})$: Structural difference map highlighting physical anomalies.
-  * **Advisory Output**: Local Llama model generated clear operator instructions detailing component identity, shift vector, and recommended rework actions.
-
----
-
-## 📁 Repository Structure
-
-```text
-Bharat-AI-EdgeInspect/
-├── README.md                      # Comprehensive project documentation
-├── models/
-│   └── best.pt                    # Trained YOLO11s PyTorch model checkpoint (40.5 MB)
-├── data/
-│   └── reference.jpg              # Golden reference PCB image (known-good standard)
-├── pcb_engine/
-│   ├── __init__.py
-│   ├── comparator.py              # Reference-to-test bounding box and footprint matcher
-│   ├── visualizer.py              # Generates result.jpg, panel.jpg, and SSIM heatmaps
-│   └── ssim_diff.py               # Structural similarity index calculation
-├── advisor.py                     # ExecuTorch Llama 3.2 1B INT4 / rule-based advisory module
-├── app.py                         # Edge Flask service (exposes /set_ref, /inspect, /status)
-└── requirements.txt               # Python package dependencies
-```
-
----
-
-## 🚀 Quickstart & Setup Guide
-
-### 1. Hardware & OS Setup (Raspberry Pi 5)
-Ensure your Raspberry Pi 5 is running **ARM64 Debian 13 (or Raspberry Pi OS Bookworm 64-bit)**:
-```bash
-uname -m  # Verify 'aarch64'
-free -h   # Verify 8 GB RAM
-```
-
-### 2. Clone Repository & Setup Virtual Environment
+### 2. Clone Repository & Install Dependencies
 ```bash
 git clone https://github.com/Sanjay-JS-29/Bharat-AI-EdgeInspect.git
 cd Bharat-AI-EdgeInspect
 
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+> **Note for Headless Raspberry Pi 5**: Install `opencv-python-headless` instead of `opencv-python` to avoid X11/GUI display dependencies:
+> ```bash
+> pip install opencv-python-headless
+> ```
+
 ### 3. Verify Model Integrity
-Ensure the model checkpoint in `models/best.pt` matches the official weights:
+Confirm that `models/best.pt` matches the official weights:
 ```bash
 shasum -a 256 models/best.pt
 # Expected SHA-256: 3bed9c0193f7813acb8b5a3acbe462dffc49aab4a86f17c92119b69479ce5552
 # Size: 40,506,412 bytes (~40.5 MB)
 ```
 
-### 4. Run Edge Application
+---
+
+## 💻 Running the Application
+
+Launch the Streamlit industrial inspection cockpit:
 ```bash
-python3 app.py --port 5000
+streamlit run app.py
 ```
+Open your browser to `http://localhost:8501`.
 
-### 5. API Endpoints
-
-* **Set Reference Board**:
-  ```bash
-  curl -X POST -F "image=@data/reference.jpg" http://localhost:5000/set_ref
-  ```
-* **Inspect Test Board**:
-  ```bash
-  curl -X POST -F "image=@test_pcb.jpg" http://localhost:5000/inspect
-  ```
-* **System Status & Health**:
-  ```bash
-  curl http://localhost:5000/status
-  ```
+### Operator Workflow in the Cockpit:
+1. **Upload Golden Reference PCB**: Load a known-good standard board image.
+2. **Provide Test Board Image**: Upload an assembled test PCB image or capture directly using a connected camera.
+3. **Execute Inspection**: Click **Inspect PCB** to run geometric alignment, YOLO component inference, and spatial defect comparison.
+4. **Review Defect Analysis**: Inspect the annotated overlay, cropped defect panel, and $(1 - \text{SSIM})$ difference heatmap.
+5. **Consult AI Advisor**: Read the automated root-cause diagnosis and ask questions via the interactive technician Q&A console.
+6. **Export Audit Reports**: Download timestamped PDF inspection certificates, CSV logs, or JSON records.
 
 ---
 
-## 🔍 Limitations & Future Scope
+## 🧪 Executing the Test Suite
 
-### Practical Considerations & Current Limitations
-* **Capture Geometry & Illumination**: Reference-board comparison is sensitive to camera angle, distance, lighting reflections, and shadow variations. A standardized capture jig or lighting envelope is recommended.
-* **Independent Defect Quantification**: While missing- and misplaced-component detection routines are fully implemented, a standalone, independently labeled multi-board dataset is required to publish independent precision/recall confusion matrices.
-* **Continuous Streaming Pipeline**: File-based ingestion (ADB/SCP and static uploads) is verified; continuous live USB webcam streaming directly into the inference loop is slated for full validation.
+The repository includes a comprehensive verification suite in `tests/`:
 
-### Engineering Roadmap
-* [ ] Integrate camera autofocus and homographic planar alignment directly into `pcb_engine`.
-* [ ] Benchmark full end-to-end latency (capture $\rightarrow$ vision $\rightarrow$ comparison $\rightarrow$ LLM advice $\rightarrow$ UI).
-* [ ] Evaluate INT8 quantization for the `YOLO11s` vision checkpoint using Arm NN / CMSIS-NN.
-* [ ] Implement exportable quality-control CSV/PDF shift audit logs.
+```bash
+# Run component comparator tests (missing & misplaced detection)
+python3 tests/test_comparator.py
+
+# Run missing, extra, and safety gating tests
+python3 tests/test_missing_extra.py
+
+# Run AI advisor and technician Q&A tests
+python3 tests/test_advisor.py
+
+# Run OpenCV alignment engine tests
+python3 tests/test_alignment.py
+
+# Run camera and byte decoding tests
+python3 tests/test_camera.py
+
+# Run report generator tests (PDF, CSV, JSON)
+python3 tests/test_reporter.py
+
+# Run defect visualization tests
+python3 tests/test_visualizer.py
+
+# Run stage 1 vision tests
+python3 tests/test_stage1.py
+
+# Run edge-case robustness tests
+python3 tests/test_edge_cases.py
+
+# Run application logic tests
+python3 tests/test_app_logic.py
+
+# Run edge performance benchmark (latency & throughput)
+python3 tests/benchmark_performance.py
+```
+
+---
+
+## 📁 Repository Directory Structure
+
+```text
+Bharat-AI-EdgeInspect/
+├── README.md                      # Comprehensive project documentation
+├── .gitignore                     # Git ignore rules for virtual environments, caches & secrets
+├── requirements.txt               # Python package dependency manifest
+├── app.py                         # Streamlit industrial inspection UI & operator cockpit
+│
+├── src/                           # Core inspection engine package
+│   ├── __init__.py                # Package initialization
+│   ├── config.py                  # Thresholds, class names, color palettes, & path config
+│   ├── detector.py                # YOLOv11s object detection engine
+│   ├── aligner.py                 # OpenCV ORB feature alignment & homography quality gating
+│   ├── comparator.py              # Component comparator (missing, misplaced, mismatch detection)
+│   ├── advisor.py                 # AI QC Advisor (ExecuTorch Llama 3.2 1B & QC rules fallback)
+│   ├── inspector.py               # End-to-end inspection orchestrator with safety gates
+│   ├── camera.py                  # Image acquisition, byte decoding, & format validation
+│   ├── visualizer.py              # Defect overlays, bounding boxes, & comparison panels
+│   └── reporter.py                # Multi-format report generator (PDF, CSV, JSON)
+│
+├── tests/                         # Verification test suites & performance benchmarks
+│   ├── test_comparator.py         # Missing & misplaced component test suite
+│   ├── test_missing_extra.py      # Missing/extra component detection & safety gating
+│   ├── test_advisor.py            # Llama 3.2 1B advisor & technician Q&A tests
+│   ├── test_alignment.py          # OpenCV ORB/RANSAC alignment verification
+│   ├── test_camera.py             # Image decoding and camera input tests
+│   ├── test_reporter.py           # Multi-format report generation tests
+│   ├── test_visualizer.py         # Defect visualization tests
+│   ├── test_stage1.py             # Vision stage detection tests
+│   ├── test_edge_cases.py         # Boundary and corruption handling
+│   ├── verify_stage1.py           # Stage 1 verification pipeline
+│   ├── test_app_logic.py          # Application workflow tests
+│   └── benchmark_performance.py   # Latency, throughput, and memory benchmark
+│
+├── deployment/
+│   └── raspberry_pi5/             # Raspberry Pi 5 deployment configs from SD card
+│       ├── config.txt             # Hardware overlays, ARM64 boost, & camera auto-detect
+│       ├── cmdline.txt            # Kernel boot parameters
+│       ├── network-config.example # Sanitized cloud-init network template (credentials stripped)
+│       ├── user-data.example      # Sanitized cloud-init user setup template (password sanitized)
+│       └── edgeinspect.service    # Systemd service unit for automated headless boot
+│
+├── results/                       # Empirical evaluation artifacts & validation screenshots
+│   ├── visualizations/            # 15 defect & pass/fail annotated PCB images
+│   └── reports/                   # Sample generated inspection audit certificates & logs
+│       ├── test_report_pass.json
+│       ├── test_report_fail.csv
+│       ├── bharatpcb_report_20261125_145241_212.pdf
+│       ├── bharatpcb_report_20261125_145241_212.json
+│       └── bharatpcb_report_20261125_145241_212.csv
+│
+├── docs/                          # Project reports & presentation
+│   └── Bharat_AI_Report.pdf       # 13-page final project submission report
+│
+├── notebooks/                     # Model training & experiment workflows
+│   └── EdgeInspect_PCB_AI.ipynb   # YOLO11s fine-tuning and evaluation notebook
+│
+└── models/
+    └── best.pt                    # Trained YOLO11s model checkpoint (40.5 MB, preserved)
+```
+
+---
+
+## 📊 Validation Results & Screenshots
+
+The `results/visualizations/` folder contains high-resolution verification artifacts generated by the inspection pipeline:
+
+* **Misplaced Component Localization**: Accurately flags component shifts exceeding placement tolerance (e.g. `vis_20261125_100425_207_20261125_100425_208.png`).
+* **Missing Component Identification**: Localizes empty reference pads where components are absent (e.g. `vis_20261125_100456_567_20261125_100456_568.png`).
+* **Clean Passing Assemblies**: Validates fault-free boards with complete component inventories (e.g. `test_vis_pass_20261125_100412_485.png`).
+* **Inspection Audit Reports**: PDF certificates (`results/reports/*.pdf`), CSV defect summaries, and structured JSON logs for factory MES integration.
 
 ---
 
@@ -229,11 +313,3 @@ python3 app.py --port 5000
 
 ### Faculty Guide
 * **Dr. Rakhi** — *Faculty Guide, Department of ECE, Atria Institute of Technology*
-
----
-
-## 📚 References & Evidence
-1. **Arm Developer Labs**: *Bharat AI-SoC Challenge 2026–27*, PS5: "Real-time industrial defect detection & quality-control assistant".
-2. **YOLO11s Model Checkpoint**: Development validation records from `YOLO11s_Tiled_Experiment` deployed at `models/best.pt`.
-3. **ExecuTorch Documentation**: ExecuTorch 1.5 ARM64 deployment and PyTorch edge inference guidelines.
-4. **Meta Llama 3.2**: Llama 3.2 1B Instruct with SpinQuant INT4 quantization for resource-constrained edge computing.

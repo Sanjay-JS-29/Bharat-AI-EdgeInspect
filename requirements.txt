@@ -1,0 +1,25 @@
+# Bharat AI – EdgeInspect AI Dependencies
+# Edge-Native Real-Time PCB Quality Inspection & Defect Advisory System
+
+# Deep Learning Vision Core
+torch>=2.2.0
+torchvision>=0.17.0
+ultralytics>=8.1.0
+
+# Computer Vision & Image Processing
+# Note: On headless Linux / Raspberry Pi 5, opencv-python-headless can be used
+opencv-python>=4.8.0
+pillow>=10.0.0
+
+# Scientific Computing & Data Structures
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Visualization & Reporting
+matplotlib>=3.8.0
+
+# Edge Operator Dashboard & Web UI
+streamlit>=1.32.0
+
+# Optional On-Edge LLM Advisory Runtime (ARM64 / Raspberry Pi 5)
+# executorch>=0.4.0

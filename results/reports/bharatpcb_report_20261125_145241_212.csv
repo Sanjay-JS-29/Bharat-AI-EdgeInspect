@@ -1,0 +1,16 @@
+record_type,board,component_id,class_name,confidence,box_x1,box_y1,box_x2,box_y2,centroid_x,centroid_y,match_status,shift_distance_px,discrepancy_reason
+DETECTION,REFERENCE,REF_1,ic,0.9108,176.6,177.1,305.1,304.5,240.82,240.82,N/A,0.0,Baseline Reference Component
+DETECTION,REFERENCE,REF_2,ic,0.8943,316.7,498.0,485.2,639.9,400.96,568.95,N/A,0.0,Baseline Reference Component
+DETECTION,REFERENCE,REF_3,ic,0.8827,516.1,217.7,639.6,321.5,577.88,269.62,N/A,0.0,Baseline Reference Component
+DETECTION,REFERENCE,REF_4,resistor,0.4330,554.3,452.2,566.4,464.1,560.37,458.15,N/A,0.0,Baseline Reference Component
+DETECTION,REFERENCE,REF_5,resistor,0.3540,113.0,283.6,126.7,302.5,119.81,293.07,N/A,0.0,Baseline Reference Component
+DETECTION,TEST,TEST_1,ic,0.9108,176.6,177.1,305.1,304.5,240.82,240.82,N/A,0.0,Aligned Test Board Detection
+DETECTION,TEST,TEST_2,ic,0.8943,316.7,498.0,485.2,639.9,400.96,568.95,N/A,0.0,Aligned Test Board Detection
+DETECTION,TEST,TEST_3,ic,0.8827,516.1,217.7,639.6,321.5,577.88,269.62,N/A,0.0,Aligned Test Board Detection
+DETECTION,TEST,TEST_4,resistor,0.4330,554.3,452.2,566.4,464.1,560.37,458.15,N/A,0.0,Aligned Test Board Detection
+DETECTION,TEST,TEST_5,resistor,0.3540,113.0,283.6,126.7,302.5,119.81,293.07,N/A,0.0,Aligned Test Board Detection
+COMPARISON,MATCHED_PAIR,MATCH_1,ic,0.9108,176.6,177.1,305.1,304.5,240.82,240.82,MATCHED,0.00,"Verified match (IoU: 1.00, shift: 0.0px)"
+COMPARISON,MATCHED_PAIR,MATCH_2,ic,0.8943,316.7,498.0,485.2,639.9,400.96,568.95,MATCHED,0.00,"Verified match (IoU: 1.00, shift: 0.0px)"
+COMPARISON,MATCHED_PAIR,MATCH_3,ic,0.8827,516.1,217.7,639.6,321.5,577.88,269.62,MATCHED,0.00,"Verified match (IoU: 1.00, shift: 0.0px)"
+COMPARISON,MATCHED_PAIR,MATCH_4,resistor,0.4330,554.3,452.2,566.4,464.1,560.37,458.15,MATCHED,0.00,"Verified match (IoU: 1.00, shift: 0.0px)"
+COMPARISON,MATCHED_PAIR,MATCH_5,resistor,0.3540,113.0,283.6,126.7,302.5,119.81,293.07,MATCHED,0.00,"Verified match (IoU: 1.00, shift: 0.0px)"

@@ -1,0 +1,6 @@
+record_type,board,component_id,class_name,confidence,box_x1,box_y1,box_x2,box_y2,centroid_x,centroid_y,match_status,shift_distance_px,discrepancy_reason
+DETECTION,REFERENCE,REF_1,ic,0.9500,100.0,100.0,200.0,200.0,150.0,150.0,N/A,0.0,Baseline Reference Component
+DETECTION,REFERENCE,REF_2,capacitor,0.8800,300.0,300.0,350.0,350.0,325.0,325.0,N/A,0.0,Baseline Reference Component
+DETECTION,TEST,TEST_1,ic,0.9400,100.0,100.0,200.0,200.0,150.0,150.0,N/A,0.0,Aligned Test Board Detection
+COMPARISON,MATCHED_PAIR,MATCH_1,ic,0.9400,100.0,100.0,200.0,200.0,150.0,150.0,MATCHED,0.00,Exact match
+DISCREPANCY,REFERENCE,DISC_1,capacitor,0.8800,300.0,300.0,350.0,350.0,325.0,325.0,MISSING,N/A,Missing capacitor

@@ -1,0 +1,134 @@
+{
+  "project": "BharatPCB-AI",
+  "system_version": "1.0.0",
+  "inspection_time_utc": "2026-11-25T14:00:00Z",
+  "reference_image": "reference.png",
+  "test_image": "test.png",
+  "inspection_result": {
+    "verdict": "PASS",
+    "verdict_reason": "PASS: All components verified within tolerances.",
+    "can_proceed_to_comparison": true,
+    "timestamp": "2026-11-25T14:00:00Z",
+    "alignment": {
+      "success": true,
+      "can_proceed_to_comparison": true,
+      "has_aligned_image": true,
+      "has_homography": true,
+      "metrics": {
+        "detected_features_ref": 1000,
+        "detected_features_test": 1000,
+        "good_matches_count": 100,
+        "inliers_count": 90,
+        "inlier_ratio": 0.9,
+        "reprojection_error": 0.5,
+        "is_homography_valid": true,
+        "quality_score": 0.95,
+        "status": "SUCCESS",
+        "rejection_reason": null
+      }
+    },
+    "comparison": {
+      "ref_count": 1,
+      "test_count": 1,
+      "matched_count": 1,
+      "missing_count": 0,
+      "extra_count": 0,
+      "misplaced_count": 0,
+      "class_mismatch_count": 0,
+      "low_confidence_count": 0,
+      "total_discrepancies": 0,
+      "matched": [
+        {
+          "class_name": "ic",
+          "reference": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.95,
+            "box": [
+              100.0,
+              100.0,
+              200.0,
+              200.0
+            ],
+            "centroid": [
+              150.0,
+              150.0
+            ],
+            "width": 100.0,
+            "height": 100.0,
+            "area": 10000.0
+          },
+          "test": {
+            "class_id": 3,
+            "class_name": "ic",
+            "confidence": 0.94,
+            "box": [
+              100.0,
+              100.0,
+              200.0,
+              200.0
+            ],
+            "centroid": [
+              150.0,
+              150.0
+            ],
+            "width": 100.0,
+            "height": 100.0,
+            "area": 10000.0
+          },
+          "iou": 1.0,
+          "centroid_distance": 0.0,
+          "is_misplaced": false,
+          "notes": "Exact match"
+        }
+      ],
+      "missing": [],
+      "extra": [],
+      "misplaced": [],
+      "class_mismatches": [],
+      "low_confidence_warnings": []
+    },
+    "ref_detections_count": 1,
+    "test_detections_count": 1,
+    "ref_detections": [
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.95,
+        "box": [
+          100.0,
+          100.0,
+          200.0,
+          200.0
+        ],
+        "centroid": [
+          150.0,
+          150.0
+        ],
+        "width": 100.0,
+        "height": 100.0,
+        "area": 10000.0
+      }
+    ],
+    "test_detections": [
+      {
+        "class_id": 3,
+        "class_name": "ic",
+        "confidence": 0.94,
+        "box": [
+          100.0,
+          100.0,
+          200.0,
+          200.0
+        ],
+        "centroid": [
+          150.0,
+          150.0
+        ],
+        "width": 100.0,
+        "height": 100.0,
+        "area": 10000.0
+      }
+    ]
+  }
+}
